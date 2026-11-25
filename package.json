@@ -1,0 +1,45 @@
+{
+  "name": "faceover",
+  "version": "0.1.0",
+  "description": "Face de-identification in the browser: every face in a photo covered by an animal, on the device.",
+  "scripts": {
+    "predev": "node scripts/copy-mediapipe-wasm.mjs",
+    "dev": "vite",
+    "prebuild": "node scripts/copy-mediapipe-wasm.mjs",
+    "build": "tsc -p . && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:e2e": "playwright test"
+  },
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "@mediapipe/tasks-vision": "^1.2.3",
+    "@zodal/core": "^0.2.6",
+    "@zodal/store": "^0.2.6",
+    "@zodal/store-localstorage": "^0.2.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "immer": "^11.2.10",
+    "lucide-react": "^1.80.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "tailwind-merge": "^3.7.1",
+    "zod": "^4.6.7",
+    "zustand": "^5.1.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.65.1",
+    "@tailwindcss/vite": "^4.3.5",
+    "@types/react": "^19.3.2",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.3.0",
+    "jsdom": "^27.0.1",
+    "tailwindcss": "^4.3.5",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.8",
+    "vite-plugin-pwa": "^2.0.0",
+    "vitest": "^3.2.7"
+  },
+  "private": true
+}
