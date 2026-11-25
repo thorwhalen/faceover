@@ -1,4 +1,5 @@
 /** Entry point: mount the app. The service worker is registered by vite-plugin-pwa. */
+import './zod-config'; // must stay the first import
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
