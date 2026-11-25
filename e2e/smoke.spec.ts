@@ -29,6 +29,12 @@ for (const { file, min } of CASES) {
     const errors: string[] = [];
     page.on('pageerror', (e) => errors.push(String(e)));
 
+    // A request the CSP blocks never reaches the network log, so collect violations too
+    // (e.g. a library's usage telemetry to a third party).
+    await page.addInitScript(() => {
+      (window as any).__cspViolations = [];
+      document.addEventListener('securitypolicyviolation', (e) => (window as any).__cspViolations.push(`${e.violatedDirective} ${e.blockedURI} ${e.sourceFile}:${e.lineNumber}:${e.columnNumber}`));
+    });
     await page.goto('');
     await expect(page.getByRole('heading', { name: 'Faceover' })).toBeVisible();
     if (SHOTS) await page.screenshot({ path: join(SHOTS, `${info.project.name}-0-start.png`) });
@@ -43,8 +49,10 @@ for (const { file, min } of CASES) {
     const preview = page.getByTestId('preview');
     const [cb, sb] = [await preview.boundingBox(), await preview.locator('..').boundingBox()];
     expect(Math.abs(cb!.width - sb!.width) + Math.abs(cb!.height - sb!.height)).toBeLessThan(2);
-    const { w, h } = await preview.evaluate((c: HTMLCanvasElement) => ({ w: c.width, h: c.height }));
-    expect(cb!.width / cb!.height).toBeCloseTo(w / h, 1);
+    // The preview draws asynchronously; wait for the drawn canvas, then compare aspects.
+    await expect
+      .poll(() => preview.evaluate((c: HTMLCanvasElement) => c.width / c.height))
+      .toBeCloseTo(cb!.width / cb!.height, 1);
 
     // Covers are hit-tested on the stage (nearest face), so the tap lands through the handle.
     await page.getByTestId('face-handle').first().click({ force: true });
@@ -72,5 +80,6 @@ for (const { file, min } of CASES) {
 
     expect(errors).toEqual([]);
     expect(foreign).toEqual([]);
+    expect(await page.evaluate(() => (window as any).__cspViolations)).toEqual([]);
   });
 }
