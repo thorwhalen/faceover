@@ -1,0 +1,15 @@
+node_modules/
+dist/
+dev-dist/
+public/mediapipe/
+*.tsbuildinfo
+.DS_Store
+*.local
+test-results/
+playwright-report/
+.claude/handoffs/
+.claude/worktrees/
+# Photos of real people never go in this repo: samples live in ~/.local/share/faceover/samples/.
+*.jpg
+*.jpeg
+*.heic
