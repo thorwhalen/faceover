@@ -67,7 +67,9 @@ export function overlapOverMin(a: Detection, b: Detection): number {
 
 /**
  * Non-maximum suppression across tiles. Uses overlap-over-min rather than IoU, because
- * a tile that cuts a face in half reports a small box inside the full one.
+ * a tile that cuts a face in half reports a small box inside the full one. The best-scoring
+ * box of a cluster is kept, grown to cover any larger box it suppresses, so a half-face
+ * that happens to score higher never leaves the other half uncovered.
  */
 export function mergeDetections(
   detections: Detection[],
@@ -75,8 +77,18 @@ export function mergeDetections(
 ): Detection[] {
   const sorted = detections.filter((d) => d.score >= minScore).sort((a, b) => b.score - a.score);
   const kept: Detection[] = [];
-  for (const d of sorted) if (kept.every((k) => overlapOverMin(k, d) < maxOverlap)) kept.push(d);
+  for (const d of sorted) {
+    const k = kept.find((k) => overlapOverMin(k, d) >= maxOverlap);
+    if (!k) kept.push({ ...d });
+    else if (_area(d) > _area(k)) Object.assign(k, _union(k, d), { keypoints: d.keypoints }); // a half-face may outscore the whole face
+  }
   return kept;
+}
+
+function _union(a: Detection, b: Detection): Pick<Detection, 'x' | 'y' | 'w' | 'h'> {
+  const x = Math.min(a.x, b.x);
+  const y = Math.min(a.y, b.y);
+  return { x, y, w: Math.max(a.x + a.w, b.x + b.w) - x, h: Math.max(a.y + a.h, b.y + b.h) - y };
 }
 
 /** Map a detection made on a tile back to image pixels. */

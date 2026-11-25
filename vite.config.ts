@@ -34,10 +34,20 @@ export default defineConfig({
         ],
       },
       workbox: {
-        // The wasm runtime (~15 MB) and the model are precached so the app works offline.
-        globPatterns: ['**/*.{js,css,html,svg,png,tflite,wasm,webmanifest}'],
-        maximumFileSizeToCacheInBytes: 20 * 1024 * 1024,
+        // The app shell is precached. The wasm runtime (~15 MB) and the model are cached on
+        // first use instead (a precache entry carries a revision query, so the browser would
+        // download the wasm twice on the first visit).
+        globPatterns: ['**/*.{js,css,html,svg,png,webmanifest}'],
         navigateFallback: `${base}index.html`,
+        // Credits and licence files must open as themselves, not as the app.
+        navigateFallbackDenylist: [/\.md$/, /LICENSE$/, /credits\.html$/],
+        runtimeCaching: [
+          {
+            urlPattern: ({ url, sameOrigin }) => sameOrigin && /\/(mediapipe|models)\//.test(url.pathname),
+            handler: 'CacheFirst',
+            options: { cacheName: 'faceover-models', expiration: { maxEntries: 10 } },
+          },
+        ],
       },
     }),
   ],

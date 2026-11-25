@@ -7,7 +7,7 @@ import { immer } from 'zustand/middleware/immer';
 import type { AnimalId, Face, Prefs } from '../core/schema';
 import { DEFAULT_PREFS } from '../core/schema';
 import { animalFor, faceFromDetection, newFaceId } from '../core/geometry';
-import { decodeImage } from '../core/image';
+import { decodeImage, releaseCanvas } from '../core/image';
 import { detectFaces, type DetectFn } from '../core/detect';
 import { prefsProvider, readPrefs, writePrefs } from './prefs';
 
@@ -52,6 +52,13 @@ export function createFaceoverStore({ detector, provider = prefsProvider() }: { 
     immer((set, get) => {
       const savePrefs = () => void writePrefs(provider, get().prefs);
       let run = 0;
+      let abort: AbortController | null = null;
+      const stop = () => {
+        run++;
+        abort?.abort();
+        abort = null;
+        releaseCanvas(get().image);
+      };
       return {
         ...initial,
 
@@ -61,7 +68,9 @@ export function createFaceoverStore({ detector, provider = prefsProvider() }: { 
         },
 
         loadFile: async (file) => {
-          const token = ++run;
+          stop();
+          const token = run;
+          const ctrl = (abort = new AbortController());
           set((s) => Object.assign(s, { ...initial, prefs: s.prefs, phase: 'decoding', fileName: file.name }));
           try {
             const image = await decodeImage(file);
@@ -69,6 +78,7 @@ export function createFaceoverStore({ detector, provider = prefsProvider() }: { 
             set((s) => Object.assign(s, { image, phase: 'detecting' }));
             const found = await detectFaces(image, {
               detector,
+              signal: ctrl.signal,
               onProgress: (d, t) => token === run && set((s) => void (s.progress = d / t)),
             });
             if (token !== run) return;
@@ -85,7 +95,7 @@ export function createFaceoverStore({ detector, provider = prefsProvider() }: { 
         },
 
         reset: () => {
-          run++;
+          stop();
           set((s) => Object.assign(s, { ...initial, prefs: s.prefs }));
         },
 

@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <!--
       The privacy promise, enforced by the browser: scripts, models and fetches may come only
-      from this origin (blob:/data: for the photo itself). Nothing can be sent elsewhere.
+      from this origin (blob:/data: for the photo itself), so the page cannot reach a third
+      party. 'self' is the whole shared origin, and the app itself never sends the photo anywhere.
     -->
     <meta
       http-equiv="Content-Security-Policy"

@@ -26,7 +26,8 @@ Candidates that run fully in the browser:
 
 ## Consequences
 
-- First visit downloads ~16 MB (mostly the wasm runtime); the service worker precaches it, so later visits and offline use cost nothing.
+- The first photo downloads ~16 MB (mostly the wasm runtime); the service worker keeps it (cache-first, same origin), so later photos and offline use cost nothing. The app shell itself is precached.
 - Detection runs on the main thread, tile by tile, yielding between tiles so the progress text paints. A worker is the next step if large photos feel slow on older phones (seam candidate, no evidence yet).
 - Faces in strong profile or heavily occluded can still be missed; the editor's **Add** button covers them by hand, and the cover follows a drag.
+- The CSP is a `<meta>` tag, and `'self'` is the shared origin `apps.thorwhalen.com`: it keeps third parties out, not the platform's other apps. If the app ever moves to an origin of its own, the platform's origin gate refuses a page carrying a meta CSP, so the policy must move to a response header then.
 - BlazeFace gives a box and six key points, enough for position, size and roll. Transforms that need the face's shape (AR lenses, warping) will swap in the Face Landmarker through the same seam.

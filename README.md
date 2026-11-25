@@ -4,7 +4,7 @@ Hide every face in a photo behind an animal, on your phone, without the photo ev
 
 **Live:** https://apps.thorwhalen.com/faceover/
 
-Take or choose a photo; every face is found and covered by an animal (a mix, or one animal for all). Tap a cover to change its animal, resize or remove it, drag it to move it, and **Add** a cover for any face that was missed. Then **Save** or **Share** (the system share sheet on phones). It installs as an app (PWA) and works offline after the first visit.
+Take or choose a photo; every face is found and covered by an animal (a mix, or one animal for all). Tap a cover to change its animal, resize or remove it, drag it to move it, and **Add** a cover for any face that was missed. Then **Save** or **Share** (the system share sheet on phones). It installs as an app (PWA) and works offline once it has processed its first photo.
 
 ## Privacy
 

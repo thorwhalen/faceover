@@ -36,6 +36,12 @@ describe('mergeDetections', () => {
     const half = det(100, 100, 25, 50, 0.6);
     const other = det(400, 100, 50, 50, 0.8);
     expect(mergeDetections([half, other, full])).toEqual([full, other]);
+    expect(full.w).toBe(50); // inputs are not mutated
+  });
+  it('a higher-scoring half-face grows to cover the whole face', () => {
+    const half = det(100, 100, 25, 50, 0.97);
+    const full = det(100, 100, 50, 50, 0.9);
+    expect(mergeDetections([half, full])).toEqual([{ ...det(100, 100, 50, 50, 0.97) }]);
   });
   it('drops low scores', () => {
     expect(mergeDetections([det(0, 0, 10, 10, 0.2)])).toEqual([]);

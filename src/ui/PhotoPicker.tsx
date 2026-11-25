@@ -22,7 +22,7 @@ export function PhotoPicker({ onFile }: { onFile: (f: File) => void }) {
         e.preventDefault();
         setOver(false);
         const f = e.dataTransfer.files?.[0];
-        if (f && f.type.startsWith('image/')) onFile(f);
+        if (f && (f.type.startsWith('image/') || /\.(heic|heif)$/i.test(f.name))) onFile(f);
       }}
     >
       <div className="flex -space-x-3" aria-hidden>
@@ -48,8 +48,11 @@ export function PhotoPicker({ onFile }: { onFile: (f: File) => void }) {
         <ShieldCheck className="mt-0.5 size-4 shrink-0 text-emerald-400" />
         Your photo never leaves this device: faces are found and covered right here, in the browser.
       </p>
-      <input ref={camera} type="file" accept="image/*" capture="environment" hidden onChange={take} data-testid="camera-input" />
-      <input ref={library} type="file" accept="image/*" hidden onChange={take} data-testid="file-input" />
+      <a href="credits.html" className="text-xs text-white/40 underline-offset-2 hover:underline">
+        Credits and licences
+      </a>
+      <input ref={camera} type="file" accept="image/*,.heic,.heif" capture="environment" hidden onChange={take} data-testid="camera-input" />
+      <input ref={library} type="file" accept="image/*,.heic,.heif" hidden onChange={take} data-testid="file-input" />
     </div>
   );
 }

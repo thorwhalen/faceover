@@ -19,7 +19,12 @@ export async function decodeImage(file: Blob, { maxPixels = MAX_PIXELS } = {}): 
     try {
       const img = new Image();
       img.src = url;
-      await img.decode();
+      try {
+        await img.decode();
+      } catch {
+        const heic = /\.(heic|heif)$/i.test((file as File).name ?? '') || /hei[cf]/.test(file.type);
+        throw new Error(heic ? 'This browser cannot open HEIC photos. Try Safari, or export the photo as JPEG.' : 'This file is not an image this browser can open.');
+      }
       source = img;
     } finally {
       URL.revokeObjectURL(url);
@@ -40,9 +45,15 @@ export function canvasToBlob(canvas: HTMLCanvasElement, { type = 'image/jpeg', q
   );
 }
 
-export function outputName(inputName: string | null): string {
-  const stem = (inputName ?? 'photo').replace(/\.[^.]+$/, '') || 'photo';
-  return `${stem}-faceover.jpg`;
+/** A name that says nothing about who is in the photo (the original file name might). */
+export function outputName(now: Date = new Date()): string {
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `faceover-${now.getFullYear()}${p(now.getMonth() + 1)}${p(now.getDate())}-${p(now.getHours())}${p(now.getMinutes())}${p(now.getSeconds())}.jpg`;
+}
+
+/** Give a canvas's memory back now: iOS caps the total canvas memory per page. */
+export function releaseCanvas(canvas: HTMLCanvasElement | null | undefined): void {
+  if (canvas) canvas.width = canvas.height = 0;
 }
 
 export function canShareFile(file: File): boolean {

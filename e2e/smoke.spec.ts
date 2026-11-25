@@ -39,16 +39,35 @@ for (const { file, min } of CASES) {
     expect(n).toBeGreaterThanOrEqual(min);
     if (SHOTS) await page.screenshot({ path: join(SHOTS, `${info.project.name}-1-${file}.png`) });
 
+    // The stage that maps taps to image pixels must be exactly the drawn photo (no letterbox).
+    const preview = page.getByTestId('preview');
+    const [cb, sb] = [await preview.boundingBox(), await preview.locator('..').boundingBox()];
+    expect(Math.abs(cb!.width - sb!.width) + Math.abs(cb!.height - sb!.height)).toBeLessThan(2);
+    const { w, h } = await preview.evaluate((c: HTMLCanvasElement) => ({ w: c.width, h: c.height }));
+    expect(cb!.width / cb!.height).toBeCloseTo(w / h, 1);
+
     // Covers are hit-tested on the stage (nearest face), so the tap lands through the handle.
     await page.getByTestId('face-handle').first().click({ force: true });
     await expect(page.getByText('This face')).toBeVisible();
-    await page.getByRole('option', { name: 'panda' }).click();
+    await page.getByRole('button', { name: 'panda', exact: true }).click();
+
+    // Dragging a cover moves it exactly with the pointer.
+    const handle = page.getByTestId('face-handle').first();
+    const before = (await handle.boundingBox())!;
+    const [x, y] = [before.x + before.width / 2, before.y + before.height / 2];
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.mouse.move(x + 20, y + 15, { steps: 4 });
+    await page.mouse.up();
+    const after = (await handle.boundingBox())!;
+    expect(after.x - before.x).toBeCloseTo(20, -0.5);
+    expect(after.y - before.y).toBeCloseTo(15, -0.5);
     if (SHOTS) await page.screenshot({ path: join(SHOTS, `${info.project.name}-2-${file}-selected.png`) });
 
     const download = page.waitForEvent('download');
     await page.getByTestId('save').click();
     const d = await download;
-    expect(d.suggestedFilename()).toMatch(/-faceover\.jpg$/);
+    expect(d.suggestedFilename()).toMatch(/^faceover-\d{8}-\d{6}\.jpg$/);
     if (SHOTS) await d.saveAs(join(SHOTS, `${info.project.name}-${file.replace('.jpg', '')}-result.jpg`));
 
     expect(errors).toEqual([]);

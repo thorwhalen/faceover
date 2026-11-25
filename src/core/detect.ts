@@ -69,18 +69,21 @@ export interface DetectOptions extends TileOptions {
   tileInput?: number;
   minScore?: number;
   onProgress?: (done: number, total: number) => void;
+  /** Stop between tiles (a new photo replaced this one). */
+  signal?: AbortSignal;
 }
 
 /** Every face in `image`, in image pixels: whole image plus finer tiles, merged. */
 export async function detectFaces(
   image: CanvasImageSource & { width: number; height: number },
-  { detector = defaultDetector(), tileInput = 640, minScore, onProgress, ...tiling }: DetectOptions = {},
+  { detector = defaultDetector(), tileInput = 640, minScore, onProgress, signal, ...tiling }: DetectOptions = {},
 ): Promise<Detection[]> {
   const tiles = planTiles(image.width, image.height, tiling);
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d', { willReadFrequently: true })!;
   const all: Detection[] = [];
   for (const [i, tile] of tiles.entries()) {
+    signal?.throwIfAborted();
     const scale = Math.min(1, tileInput / Math.max(tile.w, tile.h)) || 1;
     canvas.width = Math.max(1, Math.round(tile.w * scale));
     canvas.height = Math.max(1, Math.round(tile.h * scale));
@@ -89,5 +92,6 @@ export async function detectFaces(
     onProgress?.(i + 1, tiles.length);
     await new Promise((r) => setTimeout(r, 0)); // let the UI paint between tiles
   }
+  canvas.width = canvas.height = 0; // release the tile canvas now, not at GC
   return mergeDetections(all, { minScore });
 }

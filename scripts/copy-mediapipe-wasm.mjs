@@ -7,4 +7,6 @@ const pkgDir = join(import.meta.dirname, '..', 'node_modules', '@mediapipe', 'ta
 const out = join(import.meta.dirname, '..', 'public', 'mediapipe');
 mkdirSync(out, { recursive: true });
 for (const f of ['vision_wasm_internal.js', 'vision_wasm_internal.wasm']) copyFileSync(join(pkgDir, 'wasm', f), join(out, f));
+// The npm package ships no LICENSE file; the runtime is Apache-2.0, the same text as the model's.
+copyFileSync(join(import.meta.dirname, '..', 'public', 'models', 'LICENSE'), join(out, 'LICENSE'));
 console.log(`mediapipe wasm -> ${out}`);
