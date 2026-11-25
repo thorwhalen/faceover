@@ -1,0 +1,20 @@
+# faceover — cover every face in a photo with an animal, on the device (pure frontend; no Python backend).
+# The Vite build lands in dist/; enlace mounts it at /faceover/.
+display_name = "Faceover"
+description = "Hide every face in a photo behind an animal. Your photo never leaves your device."
+access = "public"
+
+frontend_dir = "dist"
+
+# Build step honoured by tw_platform/deploy.py, which injects VITE_PUBLIC_BASE=/faceover/.
+[build]
+install  = ["npm", "ci", "--no-audit", "--no-fund", "--no-progress"]
+build    = ["npm", "run", "build"]
+env_vars = ["VITE_PUBLIC_BASE", "VITE_API_BASE"]
+
+[deploy]
+# The server needs only dist/ (and this file); sources and tests never ship.
+exclude = ["src", "public", "node_modules", ".github", "e2e", "docs", "art", "scripts", "test-results", "playwright-report"]
+# The page promises nothing leaves the device and its CSP blocks third-party requests:
+# no Google Analytics stamp (enlace's own server-side page counts still apply).
+analytics = false

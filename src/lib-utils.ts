@@ -1,0 +1,4 @@
+/** shadcn's `cn`: merge Tailwind classes, later ones winning. */
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+export const cn = (...inputs: ClassValue[]) => twMerge(clsx(inputs));
